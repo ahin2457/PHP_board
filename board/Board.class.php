@@ -126,17 +126,17 @@ class Board
         // 삭제할 게시물의 존재 여부 확인
         $post = $this->getPostById($post_bid);
         if (!$post) {
-            echo "게시물을 찾을 수 없습니다.";
+            //echo "게시물을 찾을 수 없습니다.";
             return false;
         }
 
         // 게시물 삭제 쿼리 실행
         $query = $this->DB->query("DELETE FROM board WHERE bid = $post_bid");
         if (!$query) {
-            echo "게시물 삭제에 실패했습니다.";
+            //echo "게시물 삭제에 실패했습니다.";
             return false;
         }
-        echo "게시물이 성공적으로 삭제되었습니다.";
+        //echo "게시물이 성공적으로 삭제되었습니다.";
         return true;
     }
 

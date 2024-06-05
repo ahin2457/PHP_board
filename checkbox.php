@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../board/heamenu.css">
 </head>
 <script>
+    // 체크박스 이벤트
     $(document).ready(function() {
         $("#checkbox-all").click(function() {
             if ($("#checkbox-all").is(":checked")) $("input[name=checkList]").prop("checked", true);

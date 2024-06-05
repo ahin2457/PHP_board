@@ -88,7 +88,8 @@ while ($mrs = $memo_result->fetch_object()) {
                                 <div class="card-body">
                                     <p class="card-text"><?php echo $ma->memo; ?></p>
                                     <p class="card-text"><small class="text-muted"><?php echo $ma->userid; ?> / <?php echo $ma->regdate; ?></small></p>
-                                    <p class="card-text" style="text-align:right"><a href="javascript:;" onclick="memo_modi(<?php echo $ma->memoid ?>)">수정</a> / <a href="javascript:;" onclick="memo_del(<?php echo $ma->memoid ?>)">삭제</a></p>
+                                    <p class="card-text" style="text-align:right"><a href="javascript:;" onclick="memo_modi(<?php echo $ma->memoid ?>)">수정</a>
+                                        / <a href="javascript:;" onclick="memo_del(<?php echo $ma->memoid ?>)">삭제</a></p>
                                 </div>
                             </div>
                         </div>
@@ -173,10 +174,75 @@ while ($mrs = $memo_result->fetch_object()) {
             });
         });
 
+        //  화면에 수정할 수 있는 textarea를 보여주는 화면을 만드는 함수
+        function memo_modi(memoid) {
+
+            let data = {
+                memoid: memoid
+            };
+
+            $.ajax({
+                async: false,
+                type: 'post',
+                url: 'memo_modify.php',
+                data: data,
+                dataType: 'html',
+                error: function() {},
+                success: function(return_data) {
+                    if (return_data == "member") {
+                        alert('로그인 하십시오.');
+                        return;
+                    } else if (return_data == 'my') {
+                        alert('본인이 작성한 글만 수정할 수 있습니다.');
+                        return;
+                    } else if (retunr_data == "no") {
+                        alert("수정하지 못했습니다. 관리자에게 문의하십시오.");
+                        return;
+                    } else {
+                        $("#memo_" + memoid).html(return_data);
+                    }
+
+                }
+            });
+        }
+
+
+        function memo_modify(memoid) {
+
+            let data = {
+                memid: memoid,
+                memo: $('#memo_text_' + memoid).val()
+            };
+
+            $.ajax({
+                async: false,
+                type: 'post',
+                url: 'memo_modify_update.php',
+                data: data,
+                dataType: 'html',
+                error: function() {},
+                success: function(return_data) {
+                    if (return_dat == "member") {
+                        alert('로그인 하십시오.');
+                        return;
+                    } else if (return_data == "my") {
+                        alert('본인이 작성한 글만 수정할 수 있습니다.');
+                        return;
+                    } else if (return_data == "no") {
+                        alert('수정하지 못했습니다. 관리자에게 문의하십시오.');
+                        return
+                    } else {
+                        $("#memo_" + memoid).html(return_data);
+                    }
+                }
+            });
+        }
 
         // // 댓글이 비어있을 경우
         // $("#memo_button").click(function() {
         //     if ($.trim($("#memo").val()) == '') {
+        //         document.getElementById('');
+
         //         alert("댓글 입력해주세요");
         //         return false;
         //     }

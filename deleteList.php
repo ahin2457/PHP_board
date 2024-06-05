@@ -8,7 +8,58 @@
 # 웹 브라우저를 '/board.php'로 리다이렉션
 # 즉, 파일 삭제 후 사용자가 '/board.php'로 이동하게 됨.
 #header('location: /board.php');
+
+ini_set('display_errors', 1);
+ini_set('display_startip_errors', 1);
+error_reporting(E_ALL);
+
+# 데이터베이스 연결 파일과 Board 클래스 파일을 포함
 include 'db.php';
 require './board/Board.class.php';
 
-$AhinBoard = new Board($ahindb);
+// 응답을 JSON 형식으로 설정
+header('Content-Type: application/json');
+
+// 기본 응답 배열을 정의
+$response = ['success' => false, 'message' => ''];
+
+# 클라이언트가 서버에 보낸 요청이 POST요청인지 확인
+# $_SERVER['REQUEST_METHOD'] : 현재 요청의 메소드(HTTP 메소드)를 반환함
+# 요청 메소드가 POST인지 확인
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $ids = isset($_POST['ids']) ? $_POST['ids'] : [];
+
+    # ids 배열이 비어 있지 않은지 확인
+    if (!empty($ids)) {
+
+        # Board 클래스의 인스턴스를 생성
+        $AhinBoard = new Board($ahindb);
+        $deletedCount = 0;
+
+        # 각 ids에 대해 삭제 작업을 수행
+        foreach ($ids as $id) {
+
+            # 삭제가 성공하면 삭제된 게시글 수를 증가
+            if ($AhinBoard->deletePost($id)) {
+                $deletedCount++;
+            }
+        }
+
+        # 하나 이상의 게시글이 삭제되었는지 확인
+        if ($deletedCount > 0) {
+            $response['success'] = true;
+            $response['message'] = $deletedCount . "개의 게시글이 삭제되었습니다.";
+        } else {
+            $response['message'] = "게시글 삭제에 실패했습니다.";
+        }
+    } else {
+        $response['message'] = "삭제할 항목을 선택하지 않았습니다.";
+    }
+} else {
+    $response['message'] = "잘못된 요청입니다.";
+}
+
+// JSON 형식으로 응답
+echo json_encode($response);
+
+// echo "<script>window.location.href='board.php';</script>";

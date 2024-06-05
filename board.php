@@ -78,36 +78,13 @@ $totalPages = ceil($totalCount / $limit);
     }
 </style>
 
-<script>
-    // 체크박스
-    $(document).ready(function() {
-
-        $("#checkbox-all").click(function() {
-            if ($("#checkbox-all").is(":checked"))
-                $("input[name=checkList]").prop("checked", true);
-            else
-                $("input[name=checkList]").prop("checked", false);
-        });
-
-        $("input[name=checkList]").click(function() {
-
-            let total = $("input[name=checkList]").length;
-            let checked = $("input[name=checkList]:checked").length;
-
-            if (total != checked)
-                $("#checkbox-all").prop("checked", false);
-            else
-                $("#checkbox-all").prop("checked", true);
-        });
-    });
-</script>
 
 <!-- <div class="content-wrapper" style="border:1px solid red">     -->
 <div class="content-wrapper">
 
     <div class="content">
 
-        <div class="text-align-right">
+        <div class="search-content" style="text-align:center;margin-bottom:6px;">
             <div class="btn-group">
                 <form method="GET" action="" style="display:inline-block;" class="search-box">
                     <input type="text" class="btn btn-outline-secondary " name="search" placeholder="검색어를 입력하세요" value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
@@ -116,22 +93,6 @@ $totalPages = ceil($totalCount / $limit);
                     </button>
                 </form>
             </div>
-            <?php
-            # $_SESSION['UID'] 접근하기 전에 isset()으로 확인하여 경고를 방지함.
-            if (isset($_SESSION['UID']) && $_SESSION['UID']) {
-
-            ?>
-                <div class="btn-group">
-                    <a href="write.php" class="btn btn-secondary">등록</a>
-                    <form action="deleteList.php" method="post">
-                        <input type="hidden" name="id" value="<?= $GET['id'] ?>">
-                        <input type="submit" class="btn btn-secondary" value="삭제">
-                        <!-- <a href="" class="btn btn-secondary" name="deletedSelected">삭제</a> -->
-                    </form>
-                </div>
-            <?php
-            }
-            ?>
         </div>
 
         <table class="table">
@@ -149,24 +110,31 @@ $totalPages = ceil($totalCount / $limit);
 
             <tbody>
                 <?php
-                //$i = ($page - 1) * $limit + 1;
-                $i = (($page - 1) * $limit);
-                foreach ($list as $r) {
-
+                if ($totalCount > 0) {
+                    //$i = ($page - 1) * $limit + 1;
+                    $i = (($page - 1) * $limit);
+                    foreach ($list as $r) {
                 ?>
 
+                        <tr>
+                            <td><input type="checkbox" name="checkList" value="<?php echo $r->bid; ?>"></td>
+                            <th scope="row"><?php echo $totalCount - ($i++) ?></th>
+                            <td><?php echo $r->userid  ?></td>
+                            <td><a href="view.php?bid=<?php echo $r->bid; ?>"><?php echo $r->subject ?></a></td>
+                            <td><?php echo $r->regdate ?></td>
+                            <!-- <td><a href="?page=<?php echo $page; ?>&post_bid=<?php echo $r->bid; ?>" onclick="return confirm('정말로 삭제하시겠습니까?');" class="btn btn-outline-dark">삭제</a></td> -->
+                        </tr>
+
+                    <?php
+                    } // end foreach
+                } else { ?>
                     <tr>
-                        <td><input type="checkbox" name="checkList" value="<?php echo $r->bid; ?>"></td>
-                        <th scope="row"><?php echo $totalCount - ($i++) ?></th>
-                        <td><?php echo $r->userid  ?></td>
-                        <td><a href="view.php?bid=<?php echo $r->bid; ?>"><?php echo $r->subject ?></a></td>
-                        <td><?php echo $r->regdate ?></td>
+                        <td colspan="5" style="height: 6rem; text-align: center; padding:2rem 0px; ">
+                            게시물이 없습니다
+                        </td>
                         <!-- <td><a href="?page=<?php echo $page; ?>&post_bid=<?php echo $r->bid; ?>" onclick="return confirm('정말로 삭제하시겠습니까?');" class="btn btn-outline-dark">삭제</a></td> -->
                     </tr>
-
-                <?php
-                }
-                ?>
+                <?php } /*endif */ ?>
             </tbody>
         </table>
 
@@ -202,9 +170,90 @@ $totalPages = ceil($totalCount / $limit);
                 <?php endif; ?>
             </ul>
         </nav>
+
+        <div class="text-align-right">
+            <?php
+            # $_SESSION['UID'] 접근하기 전에 isset()으로 확인하여 경고를 방지함.
+            if (isset($_SESSION['UID']) && $_SESSION['UID']) {
+
+            ?>
+                <div>
+                    <a href="write.php" class="btn btn-secondary">등록</a>
+                    <input type="submit" id="delete-selected" class="btn btn-secondary" value="삭제">
+                </div>
+            <?php
+            }
+            ?>
+
+        </div>
     </div>
 
 
 </div>
 
+<!-- jQuery를 사용하여 체크박스 이벤트 처리 -->
+<script>
+    $(document).ready(function() {
+
+        // '전체선택' 체크박스 클릭 이벤트
+        $("#checkbox-all").click(function() {
+            $("input[name='checkList']").prop("checked", this.checked);
+        });
+
+        // 개별 체크박스 클릭 이벤트
+        $("input[name='checkList']").click(function() {
+
+            // 전체 체크박스 길이
+            let total = $("input[name='checkList']").length;
+            //체크된 체크박스의 길이
+            let checked = $("input[name='checkList']:checked").length;
+            // total === checked이면 전체 체크박스는 checked됨.
+            $("#checkbox-all").prop("checked", total === checked);
+        });
+
+        // '삭제' 버튼을 클릭했을 때 실행되는 함수
+        $("#delete-selected").click(function() {
+            // 체크된 'checkList' 체크박스의 값을 배열로 가져옴
+            let checkedValues = $("input[name='checkList']:checked")
+                .map(function() {
+                    return this.value;
+                }).get();
+
+            // 하나 이상의 체크박스가 선택되었는지 확인
+            if (checkedValues.length > 0) {
+                // 삭제 확인 메시지를 띄움
+                if (confirm("정말로 삭제하시겠습니까?")) {
+                    // AJAX 요청을 통해 선택된 게시글을 삭제
+                    $.ajax({
+                        type: "POST", // 요청 타입을 POST로 설정
+                        url: "deleteList.php", // 요청을 보낼 URL
+                        data: {
+                            ids: checkedValues
+                        }, // 보내고자 하는 data 변수 설정
+                        success: function(response) {
+                            // 서버로부터 성공 응답을 받으면 메시지를 알림
+                            alert(response.message);
+                            if (response.success) {
+                                // 삭제 성공 시 페이지를 새로고침
+                                location.reload();
+                            }
+                        },
+
+                        error: function(xhr, status, error) {
+
+                            // 요청이 실패했을 때 에러 메시지를 알림
+                            alert("삭제하는 중에 문제가 발생했습니다.");
+                            console.error("Error: ", error); // 오류 메시지를 콘솔에 출력
+                            console.error("Status: ", status);
+                            console.dir(xhr);
+                        }
+                    });
+                }
+            } else {
+                // 선택된 체크박스가 없을 때 경고 메시지를 알림
+                alert("삭제할 항목을 선택하세요.");
+            }
+        });
+    });
+</script>
 <?php include './board/footer.board.php'; ?>
