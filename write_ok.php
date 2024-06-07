@@ -16,14 +16,16 @@ $bid       = $_POST["bid"];       # bid 값이 있으면 수정 아니면 등록
 $parent_id = (int)$_POST["parent_id"]; # parent_id가 있으면 답글이다.
 $userid    = $_SESSION['UID'];    # userid를 SESSION 값으로 넣어주기
 $status    = 1;                   # 1이면 true, 0이면 false
-
+$processName = "등록"; //현재 동작명
 
 #bid 값이 있으면 수정 아니면 등록
-$bid       = isset($_POST["bid"]) ? (int)$_POST["bid"] : 0;
+$bid           = isset($_POST["bid"]) ? (int)$_POST["bid"] : 0;
 $subject       = isset($_POST["subject"]) ? $ahindb->escape_string($subject) : '';
 $content       = isset($_POST["content"]) ? $ahindb->escape_string($content) : '';
+$isUpdate = ((int)$bid > 0);
 
-if ((int)$bid > 0) {
+if ($isUpdate) {
+    $processName = '수정';
     $result = $ahindb->query("select * from board where bid=" . $bid) or die("query error=> " . $ahindb->error);
     $rs = $result->fetch_object();
 
@@ -42,18 +44,19 @@ if ((int)$bid > 0) {
 # list에 등록 버튼 작동
 try {
     $result = $ahindb->query($sql); // or die();
-    $newid = $ahindb->insert_id; // 자동 증가
+    $newid = ($isUpdate) ? (int)$bid : $ahindb->insert_id; // 자동 증가
+
 } catch (Exception $ex) {
     $result = false;
     $newid = 0;
 }
 
 if ($result && $newid > 0) {
-    echo "<script>alert('등록되었습니다.'); window.location.href = 'board.php';</script>";
+    echo '<script>alert(\'' . $processName . '되었습니다.\'); window.location.href = \'board.php\';</script>';
     // echo "<script>location.href='board.php';</script>";
     exit;
 } else {
-    $message = '글 등록에 실패했습니다.\n Error : ' . $ahindb->escape_string($ahindb->error);
+    $message = '글 ' . $processName . '에 실패했습니다.\n Error : ' . $ahindb->escape_string($ahindb->error);
     echo '<script>alert("' . $message . '");history.back();</script>';
     exit;
 }

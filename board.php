@@ -23,7 +23,7 @@ $list = $AhinBoard->getListData($page, $limit, $search);
 $totalCount = $AhinBoard->getTotalCount($search);
 
 # ceil : 주어진 숫자를 올림하여 가장 가까운 정수를 반환하는 내장함수.
-# 즉, 소수점 이하의 숫자를 올림하여 가장 가까운 정수로 반올림함.
+# 즉, 소수점 이하의 숫자를 올림하여 가장 가까운 정수로 올림함.
 $totalPages = ceil($totalCount / $limit);
 
 

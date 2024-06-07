@@ -1,0 +1,31 @@
+<?php
+session_start();
+include "db.php";
+ini_set('display_errors', '0');
+
+if (!$_SESSION['UID']) {
+    $return_data = array("result" => "member");
+    echo json_encode($return_data);
+    exit;
+}
+
+$bid = $_POST['bid'];
+$type = $_POST['type'];
+
+// 동일한 게시물에 대해 추천이나 반대를 한 기록이 있는지 확인
+$resultcheck = $ahindb->query("select reid from recommend where userid ='" . $SESSION['UID'] . "'and bid=" . $bid) or die("queryy error=>" . $ahindb->error);
+$rsc = $resultcheck->fetch_object();
+
+echo ">>>>>>>>>>>>>>>>>";
+print_r($rsc);
+
+if ($rsc->reid) {
+    $return_data = array("result" => "check");
+    echo json_encode($return_data);
+    exit;
+}
+
+$sql = "INSERT INTO recommend (bid,userid,type) VALUES('" . $bid . "','" . $_SESSION['UID'] . "','" . $type . "')";
+$ahindb->query($sql) or die($ahindb->error); # 어떤 게시물에 누가 추천이나 반대를 했는지 저장
+
+$result = $ahindb->query("select count(*) as cnt from  recommend where type='" . $type . "'and bid=" . $bid) or die("query error=>" . $ahindb->error);

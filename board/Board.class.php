@@ -29,7 +29,10 @@ class Board
             $searchQuery = "WHERE subject LIKE '%$search%' OR content LIKE '%$search%' OR userid LIKE '%$search%'";
         }
 
-        $query = $this->DB->query("SELECT * FROM board $searchQuery ORDER BY bid desc LIMIT $offset, $limit ");
+        // ifnull : 해당 Column의 값이 NULL을 반환할때, 다른 값으로 출력할 수 있도록 하는 함수.
+        // SELECT INFNULL(Column명, "Null일 경우 대체 값") FROM 테이블명;
+        // parent_id가 NULL일 경우 bid를 출력
+        $query = $this->DB->query("SELECT * FROM board $searchQuery ORDER BY ifnull(parent_id, bid)  desc LIMIT $offset, $limit ");
         if ($this->DB->errno) {
             echo "query error => " . $this->DB->error;
             die();

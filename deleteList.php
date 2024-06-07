@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         # Board 클래스의 인스턴스를 생성
         $AhinBoard = new Board($ahindb);
         $deletedCount = 0;
+        $failedCount  = 0;
 
         # 각 ids에 대해 삭제 작업을 수행
         foreach ($ids as $id) {
@@ -42,6 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             # 삭제가 성공하면 삭제된 게시글 수를 증가
             if ($AhinBoard->deletePost($id)) {
                 $deletedCount++;
+            } else {
+                $failedCount++;
             }
         }
 
@@ -49,8 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($deletedCount > 0) {
             $response['success'] = true;
             $response['message'] = $deletedCount . "개의 게시글이 삭제되었습니다.";
-        } else {
-            $response['message'] = "게시글 삭제에 실패했습니다.";
+        }
+
+        if ($failedCount > 0) {
+            $response['message'] .= " " . $failedCount . "개의 게시글 삭제에 실패했습니다.";
+        }
+        # 삭제된 게시글의 수
+        if ($deletedCount == 0 && $failedCount > 0) {
+            $response['success'] = false;
+            $response['message'] = '게시글 삭제에 실패했습니다. 실패한 게시글의 수: ' . $failedCount;
         }
     } else {
         $response['message'] = "삭제할 항목을 선택하지 않았습니다.";

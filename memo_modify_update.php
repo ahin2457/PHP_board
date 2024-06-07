@@ -30,14 +30,14 @@ if ($memoid > 0) {
   $result = $ahindb->query($sql) or die($ahindb->error);
 
   echo "<div class=\"row g-0\">
-      <div class=\"col-md-12\">
-      <div class=\"card-body\">
-        <p class=\"card-text\">" . $memo . "</p>
-        <p class=\"card-text\"><small class=\"text-muted\">" . $_SESSION['UID'] . " / now</small></p>
-        <p class=\"card-text\" style=\"text-align:right\"><a href=\"javascript:;\" onclick=\"memo_modi(" . $memoid . ")\">수정</a> / <a href=\"javascript:;\" onclick=\"memo_del(" . $memoid . ")\">삭제</a></p>
-      </div>
-    </div>
-  </div>";
+  <div class=\"col-md-12\">
+  <div class=\"card-body\">
+    <p class=\"card-text\">" . $memo . "</p>
+    <p class=\"card-text\"><small class=\"text-muted\">" . $_SESSION['UID'] . " / now</small></p>
+    <p class=\"card-text\" style=\"text-align:right\"><a href=\"javascript:;\" onclick=\"memo_modi(" . $memoid . ")\">수정</a> / <a href=\"javascript:;\" onclick=\"memo_del(" . $memoid . ")\">삭제</a></p>
+  </div>
+</div>
+</div>";
 } else {
   // 잘못된 호출이다
 }

@@ -1,5 +1,6 @@
 <?php
 include 'db.php';
+// include './board/headermenu.php';
 require './board/Board.class.php';
 
 session_start();
@@ -23,6 +24,18 @@ $memo_result = $ahindb->query($query) or die("query error => " . $ahindb->error)
 $memoArray = [];
 while ($mrs = $memo_result->fetch_object()) {
     $memoArray[] = $mrs;
+}
+
+// 추천, 반대 초기값 설정
+$recommend = [
+    'like' => 0,
+    'hate' => 0
+];
+
+$query2 = "select type,count(*) as cnt from recommend r where bid=" . $rs->bid . " group by type";
+$rec_result = $ahindb->query($query2) or die("query error => " . $ahindb->error);
+while ($recs = $rec_result->fetch_object()) {
+    $recommend[$recs->type] = $recs->cnt;
 }
 
 
@@ -54,12 +67,15 @@ while ($mrs = $memo_result->fetch_object()) {
 
             <hr>
             <p>
-                <?php echo $post->content; ?>
+                <?php echo $rs->content; ?>
             </p>
+
+            <button type="button" class="btn btn-lg btn-primary" id="like_button">추천&nbsp;<span id="like"><?php echo number_format($recommend['like']); ?></span></button>
+            <button type="button" class="btn btn-lg btn-warning" id="hate_button">반대&nbsp;<span id="hate"><?php echo number_format($recommend['hate']); ?></span></button>
             <hr>
         </article>
 
-        <nav class="blog-pagination" aria-label="Pagination">
+        <nav class=" blog-pagination" aria-label="Pagination">
             <a class="btn btn-outline-primary" href="board.php">목록</a>
             <a class="btn btn-outline-primary" href="write.php?parent_id=<?php echo $rs->bid; ?>">답글</a>
             <a class="btn btn-outline-primary" href="write.php?bid=<?php echo $rs->bid; ?>">수정</a>
@@ -107,6 +123,70 @@ while ($mrs = $memo_result->fetch_object()) {
     </div>
 
     <script>
+        // 추천 버튼
+        $("#like_button").click(function() {
+            return false;
+
+            var data = {
+                type: 'like',
+                bid: <?php echo $bid; ?>
+            };
+
+            $.ajax({
+                async: false,
+                type: 'post',
+                url: 'like_hate.php',
+                data: data,
+                dataType: 'json',
+                error: function(return_data) {
+                    if (return_data.result == "member") {
+                        alert('로그인 하십시오.');
+                        return;
+                    } else if (return_data.result == "check") {
+                        alert('다시한번 시도해주십시오.');
+                        return;
+                    } else {
+                        $("#like").text(return_data.cnt);
+                    }
+                }
+            });
+
+        });
+
+
+        // 반대 버튼
+        $("#hate_button").click(function() {
+            if (!confirm('반대하시겠습니까?')) {
+                return false;
+            }
+
+            var data = {
+                type: 'hate',
+                bid: <?php echo $bid; ?>,
+            };
+
+            $.ajax({
+                async: false,
+                type: 'post',
+                url: 'like.hate.php',
+                data: data,
+                dataType: 'json',
+                error: function() {},
+                success: function(return_data) {
+                    if (return_data.result == "member") {
+                        alert('로그인 하십시오.');
+                        return;
+                    } else if (return_data.result == "check") {
+                        alert('이미 추천이나 반대를 하셨습니다.');
+                        return;
+                    } else {
+                        $("#hate").text(return_data.cnt);
+                    }
+                }
+
+            });
+        });
+
         // 댓글 삭제 함수
         function memo_del(memoid) {
 
@@ -179,7 +259,7 @@ while ($mrs = $memo_result->fetch_object()) {
             });
         });
 
-        //  화면에 수정할 수 있는 textarea를 보여주는 화면을 만드는 함수
+
         function memo_modi(memoid) {
 
             let data = {
@@ -215,7 +295,7 @@ while ($mrs = $memo_result->fetch_object()) {
         function memo_modify(memoid) {
 
             let data = {
-                memid: memoid,
+                memoid: memoid,
                 memo: $('#memo_text_' + memoid).val()
             };
 
@@ -227,7 +307,7 @@ while ($mrs = $memo_result->fetch_object()) {
                 dataType: 'html',
                 error: function() {},
                 success: function(return_data) {
-                    if (return_dat == "member") {
+                    if (return_data == "member") {
                         alert('로그인 하십시오.');
                         return;
                     } else if (return_data == "my") {
