@@ -145,9 +145,14 @@ while ($mrs = $memo_result->fetch_object()) {
         }
 
 
-
         // ajax에서 호출할 파일을 만듬
         $("#memo_button").click(function() {
+            let memo = $('#memo').val().trim();
+
+            if (memo === '') {
+                alert('댓글을 입력해주세요');
+                return false;
+            }
 
             let data = {
                 memo: $('#memo').val(),
@@ -238,16 +243,22 @@ while ($mrs = $memo_result->fetch_object()) {
             });
         }
 
-        // // 댓글이 비어있을 경우
-        // $("#memo_button").click(function() {
-        //     if ($.trim($("#memo").val()) == '') {
-        //         document.getElementById('');
-
-        //         alert("댓글 입력해주세요");
-        //         return false;
+        // $(document).ready(function() {
+        //     // Function to check input and toggle button state
+        //     function checkInput() {
+        //         if ($('#memo').val().trim() === '') {
+        //             $('#memo_button').prop('disabled', true);
+        //         } else {
+        //             $('#memo_button').prop('disabled', false);
+        //         }
         //     }
-        //     // $("#memo_form").submit();
-        // })
+
+        //     // Initial check when the page loads
+        //     checkInput();
+
+        //     // Check input whenever the user types
+        //     $('#memo').on('input', checkInput);
+        // });
     </script>
 </body>
 
